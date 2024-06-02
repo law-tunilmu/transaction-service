@@ -16,6 +16,13 @@ COPY . .
 # Expose the port on which the application will run
 EXPOSE 8888
 
+# Set environment variables
+ARG PRODUCTION
+ARG SUPABASE_URL
+ARG SUPABASE_KEY
+ARG MIDTRANS_SERVER_KEY
+ARG MIDTRANS_CLIENT_KEY
+
 # set environment variables
 ENV PRODUCTION=${PRODUCTION}
 ENV SUPABASE_URL=${SUPABASE_URL}
