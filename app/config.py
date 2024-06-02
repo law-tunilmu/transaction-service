@@ -7,6 +7,7 @@ load_dotenv()
 
 
 
+PRODUCTION = os.environ.get('PRODUCTION', False)
 
 # async def supa_async() -> AsyncClient:
 #     load_dotenv()

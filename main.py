@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 import uvicorn
 
 from app.models import SnapTransaction
-from app.config import snap, create_supabase_client
+from app.config import PRODUCTION, snap, create_supabase_client
 
 
 import supabase
@@ -61,6 +61,6 @@ def get_transaction_status(order_id: str):
     return JSONResponse(status_response)
     
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, log_level="info", reload=True)
+if (not PRODUCTION) and (__name__ == "__main__"):
+    uvicorn.run("main:app", port=8888, log_level="info")
 
