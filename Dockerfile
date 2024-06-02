@@ -2,7 +2,8 @@
 FROM ubuntu:latest
 
 # set work directory
-WORKDIR /usr/src/app
+WORKDIR /src/app
+COPY . /src/app
 
 # install dependencies
 RUN apt-get update \
@@ -10,13 +11,11 @@ RUN apt-get update \
         git \
         python3 \
         python3-pip \
+        rm -rf /var/lib/apt/lists/*
         
 RUN pip install --upgrade pip
-COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
-# copy the rest of the project files
-COPY . .
 
 # set environment variables
 ENV PRODUCTION=${PRODUCTION}
