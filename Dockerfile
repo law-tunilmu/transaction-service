@@ -1,21 +1,20 @@
-# pull official base image
-FROM ubuntu:latest
+# Use the official Python base image
+FROM python:3.9-slim
 
-# set work directory
-WORKDIR /src/app
-COPY . /src/app
+# Set the working directory inside the container
+WORKDIR /app
 
-# install dependencies
-RUN apt-get update \
-    && apt-get install -y \
-        git \
-        python3 \
-        python3-pip \
-        rm -rf /var/lib/apt/lists/*
-        
-RUN pip install --upgrade pip
+# Copy the requirements file to the working directory
+COPY requirements.txt .
+
+# Install the Python dependencies
 RUN pip install -r requirements.txt
 
+# Copy the application code to the working directory
+COPY . .
+
+# Expose the port on which the application will run
+EXPOSE 8888
 
 # set environment variables
 ENV PRODUCTION=${PRODUCTION}
@@ -26,4 +25,4 @@ ENV MIDTRANS_CLIENT_KEY=${MIDTRANS_CLIENT_KEY}
 
 
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888"]
