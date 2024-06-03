@@ -1,5 +1,7 @@
 import hashlib
 from app.config import MIDTRANS_SERVER_KEY
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from app.config import conf
 # verify incoming notifications
 def verify_signature(notification_data):
 
@@ -20,3 +22,16 @@ def verify_signature(notification_data):
     # Get the hexadecimal representation of the hash
     hex_hash = sha512_hash.hexdigest()
     return hex_hash == signature
+
+
+async def send_email(email: str, course_id: str):
+    message = MessageSchema(
+        subject="COURSE TELAH DIBELI",
+        recipients=[email],
+        body=f"Course Anda dengan id {course_id} telah dibeli seorang student!",
+        subtype=MessageType.plain)
+
+    fm = FastMail(conf)
+
+    await fm.send_message(message)
+    return

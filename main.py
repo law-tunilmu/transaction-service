@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.responses import JSONResponse
@@ -6,7 +6,7 @@ import uvicorn
 
 from app.models import SnapTransaction, User, UserCart
 from app.config import PRODUCTION, snap, create_supabase_client
-from app.utils import verify_signature
+from app.utils import verify_signature, send_email
 from datetime import datetime
 
 import supabase
@@ -96,7 +96,8 @@ def confirm_transaction(transaction_info: SnapTransaction):
         "email": transaction_info.customer_details.email,
         "status": "pending",
         "date_created": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "course_ids": [item.id for item in transaction_info.item_details]
+        "course_ids": [item.id for item in transaction_info.item_details],
+        "creator_emails": [item.creator_email for item in transaction_info.item_details]
     }
 
     # empty cart if it uses cart
@@ -111,6 +112,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
         supabase_client.table(TRANSACTION_TABLE_NAME) \
                     .insert(transactionInDB).execute()
         
+        
         return JSONResponse(transaction_response)
     except supabase.PostgrestAPIError as e:
         print(e)
@@ -123,7 +125,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
     "/transaction/midtrans-notification", 
     description="Handle incoming notification from midtrans"
 )
-async def handle_notification(request: Request):
+async def handle_notification(request: Request, background_tasks: BackgroundTasks):
     # Parse the request body as JSON
     notification_data = await request.json()
 
@@ -148,9 +150,19 @@ async def handle_notification(request: Request):
             print("Retrieve data error at Handling Notification")  
             return JSONResponse({"message":"Error retrieving order data"}, status_code=500)
         
+        
+
         email = query.data[0]["email"]
         course_ids = query.data[0]["course_ids"]
-        new_courses = [{"email": email, "course_id": course_id} for course_id in course_ids]
+        creator_emails = query.data[0]["creator_emails"]
+
+        try:
+            for i in range(len(course_ids)):
+                background_tasks.add_task(send_email, creator_emails[i], course_ids[i])
+            new_courses = [{"email": email, "course_id": course_id} for course_id in course_ids]
+        except Exception:
+            pass
+
         try:
             supabase_client.table(COURSE_OWNED_TABLE_NAME) \
                 .insert(new_courses) \
@@ -167,6 +179,9 @@ async def handle_notification(request: Request):
             .update(updates) \
             .eq("order_id", transaction_id) \
             .execute()
+        
+        
+
         return {"message": "Notification received successfully"}
 
     except supabase.PostgrestAPIError as e:
