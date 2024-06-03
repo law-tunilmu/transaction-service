@@ -86,20 +86,6 @@ def empty_cart(user: User):
 )
 def confirm_transaction(transaction_info: SnapTransaction):
     transaction = transaction_info.model_dump()
-    try:
-        transaction_response = snap.create_transaction(transaction)
-    except Exception as e:
-        return JSONResponse(e.message, status_code=500)
-    transactionInDB = {
-        "order_id": transaction_info.transaction_details.order_id,
-        "gross_amount": transaction_info.transaction_details.gross_amount,
-        "email": transaction_info.customer_details.email,
-        "status": "pending",
-        "date_created": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "course_ids": [item.id for item in transaction_info.item_details],
-        "creator_emails": [item.creator_email for item in transaction_info.item_details]
-    }
-
     # empty cart if it uses cart
     if len(transaction_info.item_details) > 1:
         try:
@@ -108,15 +94,29 @@ def confirm_transaction(transaction_info: SnapTransaction):
             print(e)
             return JSONResponse({"message": "Error deleting cart"}, status_code=500)
 
+    transactionInDB = {
+        "gross_amount": transaction_info.transaction_details.gross_amount,
+        "email": transaction_info.customer_details.email,
+        "status": "pending",
+        "date_created": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "course_ids": [item.id for item in transaction_info.item_details],
+        "creator_emails": [item.creator_email for item in transaction_info.item_details]
+    }
+
     try:
-        supabase_client.table(TRANSACTION_TABLE_NAME) \
+        query = supabase_client.table(TRANSACTION_TABLE_NAME) \
                     .insert(transactionInDB).execute()
         
-        
-        return JSONResponse(transaction_response)
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Error adding transaction"}, status_code=500)
+    
+    transaction["transaction_details"]["order_id"] = query.data[0]["order_id"]
+    try:
+        transaction_response = snap.create_transaction(transaction)
+        return JSONResponse(transaction_response)
+    except Exception as e:
+        return JSONResponse(e.message, status_code=500)
     
 
 

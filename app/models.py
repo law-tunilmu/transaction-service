@@ -56,7 +56,6 @@ class PageExpiry(BaseModel):
     unit: str
 
 class TransactionDetails(BaseModel):
-    order_id: str
     gross_amount: int
 
 
