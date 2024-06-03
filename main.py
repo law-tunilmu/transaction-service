@@ -29,12 +29,12 @@ COURSE_OWNED_TABLE_NAME = 'course_owned'
 supabase_client = create_supabase_client()
 
 @app.get(
-    "cart/{email}",
+    "/cart/{email}",
     description="Get user cart"
 )
 def get_cart(email: str):
     try:
-        query = supabase_client.table('cart').select('course_id').eq('email', email).execute()
+        query = supabase_client.table(CART_TABLE_NAME).select('course_id').eq('email', email).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
@@ -42,12 +42,12 @@ def get_cart(email: str):
     return JSONResponse({"courses_in_cart": query.data})
 
 @app.post(
-    "cart/add",
+    "/cart/add",
     description="Add course to user cart"
 )
 def add_course_to_cart(cart: UserCart):
     try:
-        query = supabase_client.table('cart').insert(cart.model_dump()).execute()
+        query = supabase_client.table(CART_TABLE_NAME).insert(cart.model_dump()).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
@@ -55,12 +55,12 @@ def add_course_to_cart(cart: UserCart):
     return JSONResponse({"course_added": query.data})
 
 @app.delete(
-    "cart/remove",
+    "/cart/remove",
     description="Remove course from user cart"
 )
 def remove_course_from_cart(cart: UserCart):
     try:
-        query = supabase_client.table('cart').delete().eq('email', cart.email).eq('course_id', cart.course_id).execute()
+        query = supabase_client.table(CART_TABLE_NAME).delete().eq('email', cart.email).eq('course_id', cart.course_id).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
@@ -68,12 +68,12 @@ def remove_course_from_cart(cart: UserCart):
     return JSONResponse({"course_deleted": query.data})
 
 @app.delete(
-    "cart/remove_all",
+    "/cart/remove_all",
     description="Empty user cart"
 )
 def empty_cart(user: User):
     try:
-        supabase_client.table('cart').delete().eq('email', user.email).execute()
+        supabase_client.table(CART_TABLE_NAME).delete().eq('email', user.email).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
@@ -102,7 +102,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
     # empty cart if it uses cart
     if len(transaction_info.item_details) > 1:
         try:
-            supabase_client.table('cart').delete().eq('email', transaction_info.customer_details.email).execute()
+            supabase_client.table(CART_TABLE_NAME).delete().eq('email', transaction_info.customer_details.email).execute()
         except supabase.PostgrestAPIError as e:
             print(e)
             return JSONResponse({"message": "Postgres Error"}, status_code=500)
@@ -120,7 +120,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
 
 
 @app.post(
-    "transaction/midtrans-notification", 
+    "/transaction/midtrans-notification", 
     description="Handle incoming notification from midtrans"
 )
 async def handle_notification(request: Request):
