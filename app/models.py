@@ -76,4 +76,9 @@ class SnapTransaction(BaseModel):
 
 
 class User(BaseModel):
-    email = str
+    email: str
+
+
+class UserCart(BaseModel):
+    email: str
+    course_id: str
