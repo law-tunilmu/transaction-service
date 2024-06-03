@@ -132,8 +132,8 @@ async def handle_notification(request: Request):
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid notification signature")
 
-    transaction_id = notification_data["order_id"]
-    transaction_status = notification_data["transaction_status"]
+    transaction_id = notification_data.get("order_id")
+    transaction_status = notification_data.get("transaction_status")
     updates = {"status": transaction_status}
 
     # Update your database or perform actions based on the transaction status
@@ -142,7 +142,7 @@ async def handle_notification(request: Request):
         try:
             query = supabase_client.table(TRANSACTION_TABLE_NAME) \
                 .select("email, course_ids") \
-                .eq("order_id", transaction_id) \
+                .eq('order_id', transaction_id) \
                 .execute()
         except supabase.PostgrestAPIError as e:
             print("Retrieve data error at Handling Notification")  
