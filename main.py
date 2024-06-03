@@ -29,12 +29,12 @@ COURSE_OWNED_TABLE_NAME = 'course_owned'
 supabase_client = create_supabase_client()
 
 @app.get(
-    "cart/",
+    "cart/{email}",
     description="Get user cart"
 )
-def get_cart(user: User):
+def get_cart(email: str):
     try:
-        query = supabase_client.table('cart').select('course_id').eq('email', user.email).execute()
+        query = supabase_client.table('cart').select('course_id').eq('email', email).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
@@ -176,13 +176,13 @@ async def handle_notification(request: Request):
 
 
 @app.get(
-    "/course/owned", 
+    "/course/owned/{email}", 
     description="""Get list of owned courses"""
 )
-def get_transaction_status(user: User):
+def get_transaction_status(email: str):
     try:
         query = supabase_client.table(COURSE_OWNED_TABLE_NAME) \
-                    .select("*").eq('email', user.email).execute()
+                    .select("*").eq('email', email).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Error Acquiring Data"}, status_code=500)
@@ -205,13 +205,13 @@ def get_transaction_status(order_id: str):
 
 
 @app.get(
-    "/transaction/status/", 
+    "/transaction/status/{email}", 
     description="""Get all transaction made by user"""
 )
-def get_all_transaction(user: User):
+def get_all_transaction(email: str):
     try:
         query = supabase_client.table(TRANSACTION_TABLE_NAME) \
-                    .select("*").eq('email', user.email).execute()
+                    .select("*").eq('email', email).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Error Acquiring Data"}, status_code=500)
