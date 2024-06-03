@@ -29,7 +29,7 @@ COURSE_OWNED_TABLE_NAME = 'course_owned'
 supabase_client = create_supabase_client()
 
 @app.get(
-    "/cart/{email}",
+    "/transaction/cart/{email}",
     description="Get user cart"
 )
 def get_cart(email: str):
@@ -42,7 +42,7 @@ def get_cart(email: str):
     return JSONResponse({"courses_in_cart": query.data})
 
 @app.post(
-    "/cart/add",
+    "/transaction/cart/add",
     description="Add course to user cart"
 )
 def add_course_to_cart(cart: UserCart):
@@ -55,7 +55,7 @@ def add_course_to_cart(cart: UserCart):
     return JSONResponse({"course_added": query.data})
 
 @app.delete(
-    "/cart/remove",
+    "/transaction/cart/remove",
     description="Remove course from user cart"
 )
 def remove_course_from_cart(cart: UserCart):
@@ -68,7 +68,7 @@ def remove_course_from_cart(cart: UserCart):
     return JSONResponse({"course_deleted": query.data})
 
 @app.delete(
-    "/cart/remove_all",
+    "/transaction/cart/remove_all",
     description="Empty user cart"
 )
 def empty_cart(user: User):
@@ -160,8 +160,9 @@ async def handle_notification(request: Request, background_tasks: BackgroundTask
             for i in range(len(course_ids)):
                 background_tasks.add_task(send_email, creator_emails[i], course_ids[i])
             new_courses = [{"email": email, "course_id": course_id} for course_id in course_ids]
-        except Exception:
-            pass
+        except Exception as e:
+            print(e)
+            return JSONResponse({"message": "Error sending email"}, status_code=500)
 
         try:
             supabase_client.table(COURSE_OWNED_TABLE_NAME) \
@@ -190,7 +191,7 @@ async def handle_notification(request: Request, background_tasks: BackgroundTask
 
 
 @app.get(
-    "/course/owned/{email}", 
+    "/transaction/course_owned/{email}", 
     description="""Get list of owned courses"""
 )
 def get_transaction_status(email: str):
