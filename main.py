@@ -6,7 +6,7 @@ import uvicorn
 
 from app.models import SnapTransaction, User, UserCart
 from app.config import PRODUCTION, snap, create_supabase_client
-from app.utils import verify_signature, send_email
+from app.utils import verify_signature
 from datetime import datetime
 
 import supabase
