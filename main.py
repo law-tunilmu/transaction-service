@@ -146,7 +146,7 @@ async def handle_notification(request: Request):
                 .execute()
         except supabase.PostgrestAPIError as e:
             print("Retrieve data error at Handling Notification")  
-            return JSONResponse({"message":"Internal server error"}, status_code=500)
+            return JSONResponse({"message":"Error retrieving order data"}, status_code=500)
         
         email = query.data[0]["email"]
         course_ids = query.data[0]["course_ids"]
@@ -154,13 +154,12 @@ async def handle_notification(request: Request):
         try:
             supabase_client.table(COURSE_OWNED_TABLE_NAME) \
                 .insert(new_courses) \
-                .eq(order_id=transaction_id) \
                 .execute()
             return {"message": "Notification received successfully"}
 
         except supabase.PostgrestAPIError as e:
             print("Update data Error at Handling Notification")  
-            return JSONResponse({"message":"Internal server error"}, status_code=500)
+            return JSONResponse({"message":"Error Updating user owned course"}, status_code=500)
 
 
     try:
@@ -172,7 +171,7 @@ async def handle_notification(request: Request):
 
     except supabase.PostgrestAPIError as e:
         print("Update data Error at Handling Notification")  
-        return JSONResponse({"message":"Internal server error"}, status_code=500)
+        return JSONResponse({"message":"Error Updating Transaction status"}, status_code=500)
 
 
 @app.get(
