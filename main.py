@@ -39,7 +39,7 @@ def get_cart(user: User):
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
     
-    return {"courses_in_cart": query.data}
+    return JSONResponse({"courses_in_cart": query.data})
 
 @app.post(
     "cart/add",
@@ -52,7 +52,7 @@ def add_course_to_cart(cart: UserCart):
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
     
-    return {"course_added": query.data}
+    return JSONResponse({"course_added": query.data})
 
 @app.delete(
     "cart/remove",
@@ -65,7 +65,7 @@ def remove_course_from_cart(cart: UserCart):
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
     
-    return {"course_deleted": query.data}
+    return JSONResponse({"course_deleted": query.data})
 
 @app.delete(
     "cart/remove_all",
@@ -73,12 +73,12 @@ def remove_course_from_cart(cart: UserCart):
 )
 def empty_cart(user: User):
     try:
-        query = supabase_client.table('cart').delete().eq('email', user.email).execute()
+        supabase_client.table('cart').delete().eq('email', user.email).execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Postgres Error"}, status_code=500)
     
-    return {"courses_deleted": query.data}
+    return JSONResponse({"message": "succesfully emptied cart"})
 
 @app.post(
     "/transaction/confirm", 
@@ -91,13 +91,22 @@ def confirm_transaction(transaction_info: SnapTransaction):
     except Exception as e:
         return JSONResponse(e.message, status_code=500)
     transactionInDB = {
-        "order_id": transaction["transaction_details"]["order_id"],
-        "gross_amount": transaction["transaction_details"]["gross_amount"],
-        "email": transaction["customer_details"]["email"],
+        "order_id": transaction_info.transaction_details.order_id,
+        "gross_amount": transaction_info.transaction_details.gross_amount,
+        "email": transaction_info.customer_details.email,
         "status": "pending",
         "date_created": datetime.now(),
-        "course_ids": [t["id"] for t in transaction["item_details"]]
+        "course_ids": [item.id for item in transaction_info.item_details]
     }
+
+    # empty cart if it uses cart
+    if len(transaction_info.item_details) > 1:
+        try:
+            supabase_client.table('cart').delete().eq('email', transaction_info.customer_details.email).execute()
+        except supabase.PostgrestAPIError as e:
+            print(e)
+            return JSONResponse({"message": "Postgres Error"}, status_code=500)
+
     try:
         supabase_client.table(TRANSACTION_TABLE_NAME) \
                     .insert(transactionInDB).execute()
