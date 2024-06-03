@@ -165,7 +165,7 @@ async def handle_notification(request: Request):
     try:
         supabase_client.table(TRANSACTION_TABLE_NAME) \
             .update(updates) \
-            .eq(order_id=transaction_id) \
+            .eq("order_id", transaction_id) \
             .execute()
         return {"message": "Notification received successfully"}
 
