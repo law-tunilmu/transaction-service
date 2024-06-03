@@ -100,7 +100,6 @@ def confirm_transaction(transaction_info: SnapTransaction):
         "status": "pending",
         "date_created": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "course_ids": [item.id for item in transaction_info.item_details],
-        "creator_emails": [item.creator_email for item in transaction_info.item_details]
     }
 
     try:
@@ -125,7 +124,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
     "/transaction/midtrans-notification", 
     description="Handle incoming notification from midtrans"
 )
-async def handle_notification(request: Request, background_tasks: BackgroundTasks):
+async def handle_notification(request: Request):
     # Parse the request body as JSON
     notification_data = await request.json()
 
@@ -145,24 +144,20 @@ async def handle_notification(request: Request, background_tasks: BackgroundTask
             query = supabase_client.table(TRANSACTION_TABLE_NAME) \
                 .select("email, course_ids") \
                 .eq('order_id', transaction_id) \
+                .maybe_single() \
                 .execute()
         except supabase.PostgrestAPIError as e:
+            print(e)
             print("Retrieve data error at Handling Notification")  
             return JSONResponse({"message":"Error retrieving order data"}, status_code=500)
         
         
 
-        email = query.data[0]["email"]
-        course_ids = query.data[0]["course_ids"]
-        creator_emails = query.data[0]["creator_emails"]
+        email = query.data["email"]
+        course_ids = query.data["course_ids"]
 
-        try:
-            for i in range(len(course_ids)):
-                background_tasks.add_task(send_email, creator_emails[i], course_ids[i])
-            new_courses = [{"email": email, "course_id": course_id} for course_id in course_ids]
-        except Exception as e:
-            print(e)
-            return JSONResponse({"message": "Error sending email"}, status_code=500)
+        new_courses = [{"email": email, "course_id": course_id} for course_id in course_ids]
+       
 
         try:
             supabase_client.table(COURSE_OWNED_TABLE_NAME) \
@@ -211,7 +206,7 @@ def get_transaction_status(email: str):
 def get_transaction_status(order_id: str):
     try:
         query = supabase_client.table(TRANSACTION_TABLE_NAME) \
-                    .select("*").eq('order_id', order_id).execute()
+                    .select("*").eq('order_id', order_id).maybe_single().execute()
     except supabase.PostgrestAPIError as e:
         print(e)
         return JSONResponse({"message": "Error Acquiring Data"}, status_code=500)

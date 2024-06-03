@@ -7,7 +7,6 @@ class Item(BaseModel):
     price: int
     quantity: int
     name: str
-    creator_email: str
 
 class CustomerDetails(BaseModel):
     first_name: str
