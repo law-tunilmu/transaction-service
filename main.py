@@ -205,7 +205,7 @@ def get_transaction_status(order_id: str):
 
 
 @app.get(
-    "/transaction/status/{email}", 
+    "/transaction/{email}", 
     description="""Get all transaction made by user"""
 )
 def get_all_transaction(email: str):
