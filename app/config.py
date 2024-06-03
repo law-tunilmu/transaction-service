@@ -8,6 +8,10 @@ load_dotenv()
 
 
 PRODUCTION = os.environ.get('PRODUCTION', False)
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+MIDTRANS_SERVER_KEY = os.environ.get('MIDTRANS_SERVER_KEY')
+MIDTRANS_CLIENT_KEY = os.environ.get('MIDTRANS_CLIENT_KEY')
 
 # async def supa_async() -> AsyncClient:
 #     load_dotenv()
@@ -35,8 +39,8 @@ def create_supabase_client():
 
 snap = midtransclient.Snap(
     is_production=False,
-    server_key=os.getenv('MIDTRANS_SERVER_KEY'),
-    client_key=os.getenv('MIDTRANS_CLIENT_KEY')
+    server_key=MIDTRANS_SERVER_KEY,
+    client_key=MIDTRANS_CLIENT_KEY
 )
 
 

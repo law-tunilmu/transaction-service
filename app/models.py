@@ -73,3 +73,7 @@ class SnapTransaction(BaseModel):
     gopay: Optional[Gopay] = None
     expiry: Optional[Expiry] = None
     page_expiry: Optional[PageExpiry] = None
+
+
+class User(BaseModel):
+    email = str
