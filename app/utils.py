@@ -1,6 +1,6 @@
 import hmac
 import hashlib
-from config import MIDTRANS_SERVER_KEY
+from app.config import MIDTRANS_SERVER_KEY
 # verify incoming notifications
 def verify_signature(notification_data):
 
