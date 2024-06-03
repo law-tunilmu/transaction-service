@@ -95,7 +95,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
         "gross_amount": transaction_info.transaction_details.gross_amount,
         "email": transaction_info.customer_details.email,
         "status": "pending",
-        "date_created": datetime.now(),
+        "date_created": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "course_ids": [item.id for item in transaction_info.item_details]
     }
 
@@ -105,7 +105,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
             supabase_client.table(CART_TABLE_NAME).delete().eq('email', transaction_info.customer_details.email).execute()
         except supabase.PostgrestAPIError as e:
             print(e)
-            return JSONResponse({"message": "Postgres Error"}, status_code=500)
+            return JSONResponse({"message": "Error deleting cart"}, status_code=500)
 
     try:
         supabase_client.table(TRANSACTION_TABLE_NAME) \
@@ -114,7 +114,7 @@ def confirm_transaction(transaction_info: SnapTransaction):
         return JSONResponse(transaction_response)
     except supabase.PostgrestAPIError as e:
         print(e)
-        return JSONResponse({"message": "Postgres Error"}, status_code=500)
+        return JSONResponse({"message": "Error adding transaction"}, status_code=500)
     
 
 
@@ -138,7 +138,7 @@ async def handle_notification(request: Request):
 
     # Update your database or perform actions based on the transaction status
     if transaction_status == "capture" or transaction_status == "settlement":
-        updates["date_paid"] = datetime.now()
+        updates["date_paid"] = datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         try:
             query = supabase_client.table(TRANSACTION_TABLE_NAME) \
                 .select("email, course_ids") \
