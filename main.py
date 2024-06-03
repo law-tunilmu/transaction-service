@@ -148,8 +148,8 @@ async def handle_notification(request: Request):
             print("Retrieve data error at Handling Notification")  
             return JSONResponse({"message":"Internal server error"}, status_code=500)
         
-        email = query.data["email"]
-        course_ids = query.data["course_ids"]
+        email = query.data[0]["email"]
+        course_ids = query.data[0]["course_ids"]
         new_courses = [{"email": email, "course_id": course_id} for course_id in course_ids]
         try:
             supabase_client.table(COURSE_OWNED_TABLE_NAME) \
