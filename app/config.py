@@ -2,8 +2,6 @@ import midtransclient
 import os
 from dotenv import load_dotenv
 from supabase.client import create_client
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
-
 
 load_dotenv()
 
@@ -15,15 +13,6 @@ SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
 MIDTRANS_SERVER_KEY = os.environ.get('MIDTRANS_SERVER_KEY')
 MIDTRANS_CLIENT_KEY = os.environ.get('MIDTRANS_CLIENT_KEY')
 
-conf = ConnectionConfig(
-    MAIL_USERNAME = "Tunilmu",
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD"),
-    MAIL_FROM = os.environ.get("MAIL_USER"),
-    MAIL_PORT = 587,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_STARTTLS = True,
-    MAIL_SSL_TLS = False,
-)
 
 def create_supabase_client():
     load_dotenv()
