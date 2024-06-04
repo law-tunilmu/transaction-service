@@ -174,7 +174,6 @@ async def handle_notification(request: Request):
             .eq("order_id", transaction_id) \
             .execute()
         
-        
 
         return {"message": "Notification received successfully"}
 
