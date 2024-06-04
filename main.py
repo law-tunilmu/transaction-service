@@ -163,8 +163,6 @@ async def handle_notification(request: Request):
             supabase_client.table(COURSE_OWNED_TABLE_NAME) \
                 .insert(new_courses) \
                 .execute()
-            return {"message": "Notification received successfully"}
-
         except supabase.PostgrestAPIError as e:
             print("Update data Error at Handling Notification")  
             return JSONResponse({"message":"Error Updating user owned course"}, status_code=500)
